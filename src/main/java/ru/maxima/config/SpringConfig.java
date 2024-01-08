@@ -1,2 +1,11 @@
-package ru.maxima.config;public class SpringConfig {
+package ru.maxima.config;
+
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+
+@Configuration
+@ComponentScan("ru.maxima")
+@EnableWebMvc
+public class SpringConfig {
 }
