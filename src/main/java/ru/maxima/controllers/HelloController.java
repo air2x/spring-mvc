@@ -3,6 +3,7 @@ package ru.maxima.controllers;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -19,8 +20,10 @@ public class HelloController {
     }
     @GetMapping("/new-hello-world")
     public String sayHello(@RequestParam("name") String name,
-                           @RequestParam("surname") String surname) {
+                           @RequestParam("surname") String surname,
+                            Model model) {
         System.out.println(name + ":" + surname);
+        model.addAttribute("message", name + ":" + surname);
         System.out.println("You are inside your controller");
         return "hello";
     }
