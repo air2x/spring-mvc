@@ -29,4 +29,9 @@ public class HelloController {
     public String sayHelloAirat() {
         return "name";
     }
+
+    @GetMapping("/hello")
+    public String sayHello() {
+        return "hello";
+    }
 }
