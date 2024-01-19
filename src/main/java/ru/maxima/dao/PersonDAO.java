@@ -3,43 +3,108 @@ package ru.maxima.dao;
 import org.springframework.stereotype.Component;
 import ru.maxima.model.Person;
 
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 @Component
 public class PersonDAO {
 
-    private static Long PEOPLE_COUNT = 0L;
+    private static final String URL = "jdbc:postgresql://localhost:5432/postgres";
+    private static final String USERNAME = "postgres";
+    private static final String PASSWORD = "postgres";
 
+    private static final Connection connection;
 
-    private List<Person> people;
+    static {
+        try {
+            Class.forName("org.postgresql.Driver");
+        } catch (ClassNotFoundException e) {
 
-    {
-
-        people = new ArrayList<>();
-        people.add(new Person(++PEOPLE_COUNT, "Damir"));
-        people.add(new Person(++PEOPLE_COUNT, "Airat"));
-        people.add(new Person(++PEOPLE_COUNT, "Maxim"));
+        }
+        try {
+            connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-
     public List<Person> getAllPeople() {
-        return people;
+        List<Person> allPeople = new ArrayList<>();
+        try {
+            Statement statement = connection.createStatement();
+            String SQL = "select * from person";
+            ResultSet resultSet = statement.executeQuery(SQL);
+            while (resultSet.next()) {
+                Person person = new Person();
+                person.setId(resultSet.getLong("id"));
+                person.setName(resultSet.getString("name"));
+                person.setAge(resultSet.getInt("age"));
+                person.setEmail(resultSet.getString("email"));
+                allPeople.add(person);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return allPeople;
     }
 
     public Person findById(Long id) {
-        return people.stream()
-                .filter(person -> person.getId().equals(id))
-                .findAny().orElse(null);
+        Person person = null;
+        try {
+            Statement statement = connection.createStatement();
+            String SQL = "select * from person where id = " + id;
+            ResultSet resultSet = statement.executeQuery(SQL);
+            while (resultSet.next()) {
+                person = new Person();
+                person.setId(resultSet.getLong("id"));
+                person.setName(resultSet.getString("name"));
+                person.setAge(resultSet.getInt("age"));
+                person.setEmail(resultSet.getString("email"));
+
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return person;
     }
 
     public void save(Person person) {
-        person.setId(++PEOPLE_COUNT);
-        people.add(person);
+        Long nextId = (long) (getAllPeople().size() + 1);
+        try {
+            Statement statement = connection.createStatement();
+            String SQL = "insert into person(id, name, age, email) values (" +
+                    nextId + ", '" +
+                    person.getName() + "'," +
+                    person.getAge() + ",'" +
+                    person.getEmail() + "')";
+            statement.executeUpdate(SQL);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void update(Long id, Person editedPerson) {
-        Person personToBeUpdated = findById(id);
-        personToBeUpdated.setName(editedPerson.getName());
+        try {
+            Statement statement = connection.createStatement();
+            String SQL = "update person " +
+                    "set name = '" + editedPerson.getName() + "'" +
+                    ", age = " + editedPerson.getAge() + "" +
+                    ", email = '" + editedPerson.getEmail() + "'" +
+                    " where id = " + id;
+            statement.executeUpdate(SQL);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void deleteByID(Long id) {
+        try {
+            Statement statement = connection.createStatement();
+            String SQL = "delete from person where id = " + id;
+            statement.executeUpdate(SQL);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
